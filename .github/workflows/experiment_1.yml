@@ -21,7 +21,7 @@ jobs:
       - name: Configure ssh
         run: |
           mkdir -p ~/.ssh/
-          echo $SSH_KEY > ~/.ssh/${{ github.event.inputs.environment }}.key
+          echo "$SSH_KEY" > ~/.ssh/${{ github.event.inputs.environment }}.key
           chmod 600 ~/.ssh/${{ github.event.inputs.environment }}.key
           cat >>~/.ssh/config <<END
           Host ${{ github.event.inputs.environment }}
