@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
     env:
+      FLYWAY_PASSWORD: ${{ secrets.FLYWAY_PASSWORD }}
+      FLYWAY_URL: ${{ secrets.FLYWAY_URL }}
+      FLYWAY_USER: ${{ secrets.FLYWAY_USER }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_KEY: ${{ secrets.SSH_KEY }}
       SSH_USER: ${{ secrets.SSH_USER }}
@@ -32,4 +36,11 @@ jobs:
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
       - name: Log in to container registry
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | ssh production "docker login ghcr.io --username ${{ github.actor }} --password-stdin"
+          echo "$GITHUB_TOKEN" | ssh ${{ github.event.inputs.environment }} "docker login ghcr.io --username ${{ github.actor }} --password-stdin"
+      - name: Run database schema info
+        run: |
+          cat <<END | ssh ${{ github.event.inputs.environment }} "docker run --rm --pull always ghcr.io/opentree-education/rhizone-lms_flyway:latest info -configFiles=-"
+          flyway.password=$FLYWAY_PASSWORD
+          flyway.url=$FLYWAY_URL
+          flyway.user=$FLYWAY_USER
+          END
