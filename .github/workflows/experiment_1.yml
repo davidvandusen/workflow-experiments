@@ -1,0 +1,31 @@
+name: Experiment 1
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        type: environment
+        required: true
+
+jobs:
+  deploy_to_production:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - name: Configure ssh
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/${{ github.event.inputs.environment }}.key
+          chmod 600 ~/.ssh/${{ github.event.inputs.environment }}.key
+          cat >>~/.ssh/config <<END
+          Host ${{ github.event.inputs.environment }}
+            HostName ${{ secrets.SSH_HOST }}
+            User ${{ secrets.SSH_USER }}
+            IdentityFile ~/.ssh/${{ github.event.inputs.environment }}.key
+          END
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Test ssh
+        run: |
+          ssh ${{ github.event.inputs.environment }} 'echo "Test successful!"'
