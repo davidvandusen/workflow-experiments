@@ -30,6 +30,6 @@ jobs:
             IdentityFile ~/.ssh/${{ github.event.inputs.environment }}.key
           END
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
-      - name: Test ssh
+      - name: Log in to container registry
         run: |
-          ssh ${{ github.event.inputs.environment }} 'echo "Test successful!"'
+          echo "${{ secrets.GITHUB_TOKEN }}" | ssh production "docker login ghcr.io --username ${{ github.actor }} --password-stdin"
