@@ -9,23 +9,27 @@ on:
         required: true
 
 jobs:
-  deploy_to_production:
-    name: Deploy to production
+  do_experiment:
+    name: Do experiment
     runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.environment }}
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      SSH_USER: ${{ secrets.SSH_USER }}
     steps:
       - name: Configure ssh
         run: |
           mkdir -p ~/.ssh/
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/${{ github.event.inputs.environment }}.key
+          echo $SSH_KEY > ~/.ssh/${{ github.event.inputs.environment }}.key
           chmod 600 ~/.ssh/${{ github.event.inputs.environment }}.key
           cat >>~/.ssh/config <<END
           Host ${{ github.event.inputs.environment }}
-            HostName ${{ secrets.SSH_HOST }}
-            User ${{ secrets.SSH_USER }}
+            HostName $SSH_HOST
+            User $SSH_USER
             IdentityFile ~/.ssh/${{ github.event.inputs.environment }}.key
           END
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
       - name: Test ssh
         run: |
           ssh ${{ github.event.inputs.environment }} 'echo "Test successful!"'
