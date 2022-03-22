@@ -1,0 +1,20 @@
+name: Experiment 2
+
+on:
+  workflow_dispatch:
+    inputs:
+      should_go:
+        description: Should go?
+        required: true
+        type: boolean
+
+jobs:
+  do_experiment:
+    name: Do experiment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Thing 1
+        if: ${{ github.event.inputs.should_go == 'true' }}
+        run: echo "Go!"
+      - name: Thing 2
+        run: echo "Go again!"
